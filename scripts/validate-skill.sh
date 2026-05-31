@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# validate-skill.sh — Validate a SKILL.md against the ClawHub, Agent Skills, and Vercel Labs skill specs
+# validate-skill.sh — Validate a SKILL.md against the Agent Skills spec (frontmatter, shared contract, termination)
 # Usage: ./scripts/validate-skill.sh <path-to-skill-directory>
 # Example: ./scripts/validate-skill.sh research/keyword-research
 
@@ -89,29 +89,9 @@ pass() { echo -e "${GREEN}  ✅ PASS${NC}: $1"; PASS=$((PASS + 1)); }
 fail() { echo -e "${RED}  ❌ FAIL${NC}: $1"; FAIL=$((FAIL + 1)); }
 warn() { echo -e "${YELLOW}  ⚠️  WARN${NC}: $1"; WARN=$((WARN + 1)); }
 
-hash_file() {
-    if command -v shasum >/dev/null 2>&1; then
-        shasum -a 256 "$1" | awk '{print $1}'
-    else
-        sha256sum "$1" | awk '{print $1}'
-    fi
-}
-
-hash_stdin() {
-    if command -v shasum >/dev/null 2>&1; then
-        shasum -a 256 | awk '{print $1}'
-    else
-        sha256sum | awk '{print $1}'
-    fi
-}
-
-extract_runbook_execution_block() {
-    awk 'BEGIN{found=0} /^## §1 · Handoff Schema/{found=1} /^## §6 /{if(found) exit} found{print}' "$1"
-}
-
 echo ""
 echo "Validating: $SKILL_FILE"
-echo "Specs: ClawHub · Agent Skills · Vercel Labs skills ecosystem"
+echo "Spec: Agent Skills (frontmatter + shared contract)"
 echo "=============================================="
 
 # Check file exists
@@ -125,30 +105,21 @@ FRONTMATTER=$(awk '/^---/{if(++n==2)exit} n' "$SKILL_FILE")
 
 # --- Required field: name ---
 # Agent Skills: lowercase, hyphens, ≤64 chars, matches dir name
-# ClawHub: slug pattern ^[a-z0-9][a-z0-9-]*$ (slightly more permissive — allows leading digit)
-# Vercel Labs: same as Agent Skills
 NAME=$(echo "$FRONTMATTER" | grep -E '^name:' | sed 's/name: *//' | tr -d '"'"'" | tr -d '\r')
 if [ -z "$NAME" ]; then
     fail "Missing required field: name"
 else
-    # Agent Skills + Vercel Labs: must start with letter
+    # Agent Skills: must start with letter
     if echo "$NAME" | grep -qE '^[a-z][a-z0-9-]*[a-z0-9]$' || echo "$NAME" | grep -qE '^[a-z]$'; then
         if echo "$NAME" | grep -q '\-\-'; then
             fail "name contains consecutive hyphens: $NAME"
         elif [ ${#NAME} -gt 64 ]; then
             fail "name exceeds 64 chars: ${#NAME} chars"
         else
-            pass "name is valid (Agent Skills + Vercel Labs): $NAME"
+            pass "name is valid: $NAME"
         fi
     else
         fail "name must be lowercase letters, numbers, hyphens only (got: $NAME)"
-    fi
-
-    # ClawHub slug check: ^[a-z0-9][a-z0-9-]*$ (no consecutive hyphens implied)
-    if echo "$NAME" | grep -qE '^[a-z0-9][a-z0-9-]*$' && ! echo "$NAME" | grep -q '\-\-'; then
-        pass "name passes ClawHub slug pattern"
-    else
-        fail "name fails ClawHub slug pattern ^[a-z0-9][a-z0-9-]*$: $NAME"
     fi
 
     # Check name matches directory
@@ -220,59 +191,20 @@ if echo "$FRONTMATTER" | grep -qE '^metadata:'; then
     else
         warn "metadata.version not found"
     fi
-    # ClawHub: metadata.openclaw (or metadata.clawdbot / metadata.clawdis)
-    # Tool-agnostic skills (no hard dependencies) should omit the openclaw block entirely.
-    # If present, check for inconsistencies (primaryEnv declared but requires.env empty).
-    if echo "$FRONTMATTER" | grep -qE '  openclaw:|  clawdbot:|  clawdis:'; then
-        # Check for primaryEnv + empty requires.env inconsistency
-        HAS_PRIMARY_ENV=$(echo "$FRONTMATTER" | grep -qE '    primaryEnv:' && echo "yes" || echo "no")
-        HAS_EMPTY_REQ_ENV=$(echo "$FRONTMATTER" | grep -qE '      env: \[\]' && echo "yes" || echo "no")
-        if [ "$HAS_PRIMARY_ENV" = "yes" ] && [ "$HAS_EMPTY_REQ_ENV" = "yes" ]; then
-            fail "ClawHub: metadata.openclaw declares primaryEnv but requires.env is empty — inconsistent (either add the key to requires.env or remove the openclaw block for tool-agnostic skills)"
-        else
-            pass "ClawHub: metadata.openclaw runtime declaration present and consistent"
-        fi
-    else
-        pass "ClawHub: no metadata.openclaw block (tool-agnostic skill — OK per AGENTS.md)"
-    fi
 else
     warn "Missing recommended field: metadata"
 fi
 
-# --- Body length check ---
+# --- Body length advisory ---
 BODY_LINES=$(awk 'BEGIN{n=0} /^---/{n++; next} n>=2{print}' "$SKILL_FILE" | wc -l | tr -d ' ')
 IS_AUDITOR=$(echo "$FRONTMATTER" | grep -qE '^class: *auditor' && echo "yes" || echo "no")
-RUNBOOK_START_COUNT=$(grep -c 'runbook-sync start' "$SKILL_FILE" 2>/dev/null || true)
-RUNBOOK_END_COUNT=$(grep -c 'runbook-sync end' "$SKILL_FILE" 2>/dev/null || true)
-RUNBOOK_START_LINE=""
-RUNBOOK_END_LINE=""
-HAS_RUNBOOK_SYNC="no"
 
-if [ "$RUNBOOK_START_COUNT" -eq 1 ] && [ "$RUNBOOK_END_COUNT" -eq 1 ]; then
-    RUNBOOK_START_LINE=$(grep -n 'runbook-sync start' "$SKILL_FILE" | cut -d: -f1)
-    RUNBOOK_END_LINE=$(grep -n 'runbook-sync end' "$SKILL_FILE" | cut -d: -f1)
-    if [ "$RUNBOOK_START_LINE" -lt "$RUNBOOK_END_LINE" ]; then
-        HAS_RUNBOOK_SYNC="yes"
-    fi
-fi
-
-if [ "$IS_AUDITOR" = "yes" ] && [ "$HAS_RUNBOOK_SYNC" = "yes" ]; then
-    if [ "$BODY_LINES" -gt 750 ]; then
-        warn "Auditor inline runbook is $BODY_LINES lines (allowed target: ≤750). Keep protocol-critical runbook inline, but consider trimming examples."
-    else
-        pass "Auditor inline runbook length OK: $BODY_LINES lines (≤750 exception)"
-    fi
-elif [ "$BODY_LINES" -gt 350 ]; then
-    warn "Skill body is $BODY_LINES lines (recommended: ≤350 lines / ~4000 tokens). Move reference data to references/ subdirectory."
-else
-    pass "Skill body length OK: $BODY_LINES lines"
-fi
-
-# --- Check for references/ directory if body is large ---
-if [ "$IS_AUDITOR" = "yes" ] && [ "$HAS_RUNBOOK_SYNC" = "yes" ]; then
-    pass "Auditor inline runbook keeps protocol detail in SKILL.md by design"
+if [ "$IS_AUDITOR" = "yes" ]; then
+    pass "Auditor skill keeps protocol runbook inline by design ($BODY_LINES lines)"
 elif [ "$BODY_LINES" -gt 250 ] && [ ! -d "$SKILL_DIR/references" ]; then
     warn "Skill body is $BODY_LINES lines but no references/ directory found. Consider extracting detailed tables/rubrics."
+else
+    pass "Skill body length OK: $BODY_LINES lines"
 fi
 
 # --- Shared contract section checks ---
@@ -312,48 +244,6 @@ if [ "$IS_AUDITOR" = "yes" ]; then
     else
         fail "Auditor skill missing heading: ## Validation Checkpoints"
     fi
-    if [ "$HAS_RUNBOOK_SYNC" = "yes" ]; then
-        pass "auditor runbook-sync start/end markers present and ordered"
-    else
-        fail "Auditor skill must have exactly one ordered runbook-sync start marker and end marker"
-    fi
-
-    if [ "$HAS_RUNBOOK_SYNC" = "yes" ]; then
-        RUNBOOK_SOURCE="$REPO_ROOT/references/auditor-runbook.md"
-        MARKER_LINE=$(sed -n "${RUNBOOK_START_LINE}p" "$SKILL_FILE")
-        DECLARED_SOURCE_SHA=$(echo "$MARKER_LINE" | sed -n 's/.*source_sha256=\([0-9a-f]\{64\}\).*/\1/p')
-        DECLARED_BLOCK_SHA=$(echo "$MARKER_LINE" | sed -n 's/.*block_sha256=\([0-9a-f]\{64\}\).*/\1/p')
-
-        if [ -z "$DECLARED_SOURCE_SHA" ]; then
-            fail "Auditor runbook-sync start marker missing source_sha256"
-        elif [ -f "$RUNBOOK_SOURCE" ]; then
-            ACTUAL_SOURCE_SHA=$(hash_file "$RUNBOOK_SOURCE")
-            if [ "$DECLARED_SOURCE_SHA" = "$ACTUAL_SOURCE_SHA" ]; then
-                pass "auditor runbook source_sha256 matches references/auditor-runbook.md"
-            else
-                fail "Auditor runbook source_sha256 drift: expected $ACTUAL_SOURCE_SHA, found $DECLARED_SOURCE_SHA"
-            fi
-        else
-            fail "Missing references/auditor-runbook.md for auditor hash validation"
-        fi
-
-        if [ -z "$DECLARED_BLOCK_SHA" ]; then
-            fail "Auditor runbook-sync start marker missing block_sha256"
-        else
-            ACTUAL_BLOCK_SHA=$(awk -v s="$RUNBOOK_START_LINE" -v e="$RUNBOOK_END_LINE" 'NR>s && NR<e {print}' "$SKILL_FILE" | hash_stdin)
-            SOURCE_BLOCK_SHA=$(extract_runbook_execution_block "$RUNBOOK_SOURCE" | hash_stdin)
-            if [ "$DECLARED_BLOCK_SHA" = "$ACTUAL_BLOCK_SHA" ]; then
-                pass "auditor runbook block_sha256 matches inline block"
-            else
-                fail "Auditor runbook block_sha256 drift: expected $ACTUAL_BLOCK_SHA, found $DECLARED_BLOCK_SHA"
-            fi
-            if [ "$DECLARED_BLOCK_SHA" = "$SOURCE_BLOCK_SHA" ]; then
-                pass "auditor runbook block_sha256 matches source §1-5"
-            else
-                fail "Auditor runbook source §1-5 drift: expected $SOURCE_BLOCK_SHA, found $DECLARED_BLOCK_SHA"
-            fi
-        fi
-    fi
 fi
 
 # --- Next Best Skill termination contract ---
@@ -368,22 +258,22 @@ else
     fail "Next Best Skill block lacks termination language and no global default contract was found"
 fi
 
-# --- ClawHub: file type check (text only, no binaries) ---
-NON_TEXT=$(find "$SKILL_DIR" -type f ! -name "*.md" ! -name "*.txt" ! -name "*.json" ! -name "*.yaml" ! -name "*.yml" ! -name "*.sh" ! -name "*.csv" ! -name ".clawhubignore" ! -name ".gitignore" 2>/dev/null | grep -v '/\.' | head -5)
+# --- File type check (text only, no binaries) ---
+NON_TEXT=$(find "$SKILL_DIR" -type f ! -name "*.md" ! -name "*.txt" ! -name "*.json" ! -name "*.yaml" ! -name "*.yml" ! -name "*.sh" ! -name "*.csv" ! -name ".gitignore" 2>/dev/null | grep -v '/\.' | head -5)
 if [ -n "$NON_TEXT" ]; then
-    warn "ClawHub: non-text files found (ClawHub only supports text-based files): $NON_TEXT"
+    warn "non-text files found (skills should be text-based): $NON_TEXT"
 else
-    pass "ClawHub: all files are text-based"
+    pass "all files are text-based"
 fi
 
-# --- Vercel Labs: description optimized for 'npx skills find' discovery ---
+# --- Description length for discovery ---
 if echo "$FRONTMATTER" | grep -qE '^description:'; then
-    VERCEL_DESC=$(echo "$FRONTMATTER" | grep -E '^description:' | sed "s/description: *//")
-    VERCEL_LEN=${#VERCEL_DESC}
-    if [ "$VERCEL_LEN" -gt 50 ]; then
-        pass "Vercel Labs: description suitable for 'npx skills find' discovery ($VERCEL_LEN chars)"
+    DESC=$(echo "$FRONTMATTER" | grep -E '^description:' | sed "s/description: *//")
+    DESC_LEN=${#DESC}
+    if [ "$DESC_LEN" -gt 50 ]; then
+        pass "description suitable for 'npx skills find' discovery ($DESC_LEN chars)"
     else
-        warn "Vercel Labs: description may be too short for effective 'npx skills find' discovery"
+        warn "description may be too short for effective 'npx skills find' discovery"
     fi
 fi
 

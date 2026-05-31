@@ -18,13 +18,7 @@ docs/plans/
 
 # Local agent/app state
 .claude/
-.docs/*
-!.docs/README.md
-!.docs/proposal-aaron-command-architecture-v2.md
-!.docs/host-namespace-smoke.md
-!.docs/slashaaron-product-proposal.md
-!.docs/seo-geo-anchor-pack-implementation-plan.md
-!.docs/seo-geo-anchor-pack-acceptance.md
+.docs/
 
 # Environment variables
 .env

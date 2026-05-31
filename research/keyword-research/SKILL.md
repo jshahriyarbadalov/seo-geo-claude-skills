@@ -3,7 +3,7 @@ name: keyword-research
 description: 'Use when the user asks to "find keywords"; prioritizes volume, difficulty, intent, and clusters from provided or connected data. 关键词研究/内容选题'
 version: "9.9.9"
 license: Apache-2.0
-compatibility: "Claude Code, skills.sh, ClawHub, Vercel Labs, Cursor, Windsurf, Codex CLI, Amp, Gemini CLI, Kimi Code, Qwen Code, CodeBuddy"
+compatibility: "Claude Code and compatible agent-skill hosts"
 homepage: "https://github.com/aaron-he-zhu/seo-geo-claude-skills"
 when_to_use: "Use when starting keyword research for a new page, topic, or campaign. Also when the user asks about search volume, keyword difficulty, topic clusters, long-tail keywords, what to write about, 关键词研究, 挖词, 内容选题, or 搜什么词."
 argument-hint: "<topic or seed keyword> [market/language]"

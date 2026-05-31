@@ -95,5 +95,5 @@ Sorted by: weight × points lost (highest impact first)
 
 - For entity building: run `entity-optimizer` to strengthen I-dimension signals
 - For content audit: use `content-quality-auditor` on key pages
-- For tracking progress: run `/aaron:report` with CITE score trends quarterly
+- For tracking progress: run `/aaron:track --report` with CITE score trends quarterly
 ```

@@ -3,7 +3,7 @@ name: entity-optimizer
 description: 'Use when the user asks to "optimize entity presence"; builds Knowledge Graph, Wikidata, sameAs, and AI recognition signals. 实体优化/知识图谱'
 version: "9.9.9"
 license: Apache-2.0
-compatibility: "Claude Code, skills.sh, ClawHub, Vercel Labs, Cursor, Windsurf, Codex CLI, Amp, Gemini CLI, Kimi Code, Qwen Code, CodeBuddy"
+compatibility: "Claude Code and compatible agent-skill hosts"
 homepage: "https://github.com/aaron-he-zhu/seo-geo-claude-skills"
 when_to_use: "Use when optimizing entity presence for Knowledge Graph, Wikidata, or AI engine disambiguation. Also for brand entity canonicalization."
 argument-hint: "<entity name or brand>"

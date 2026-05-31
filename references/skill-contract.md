@@ -18,7 +18,7 @@ Auditor-class skills must additionally expose:
 
 - `When This Must Trigger`
 - `Validation Checkpoints`
-- Inline `runbook-sync` markers for the authoritative auditor runbook block
+- The inlined authoritative auditor runbook block
 
 Optional sections such as `What This Skill Does`, `Example`, `Tips for Success`, `Save Results`, and non-auditor `Validation Checkpoints` may be present when they materially improve execution quality. They are not required for the compact skill skeleton.
 
@@ -35,7 +35,7 @@ Optional sections such as `What This Skill Does`, `Example`, `Tips for Success`,
 | `license` | SPDX string | Optional | Default: Apache-2.0 |
 | `compatibility` | String | Optional | Platform compatibility statement |
 | `homepage` | URL | Optional | Skill homepage |
-| `class` | `auditor` | Optional (required for auditor-class) | Marks the skill as a protocol-layer auditor that inlines [auditor-runbook.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/references/auditor-runbook.md). Used by `/aaron:guard --contracts` for discovery via frontmatter glob. See [AUDITOR-AUTHORS.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/references/AUDITOR-AUTHORS.md). |
+| `class` | `auditor` | Optional (required for auditor-class) | Marks the skill as a protocol-layer auditor that inlines [auditor-runbook.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/references/auditor-runbook.md). |
 
 Note: `when_to_use` uses underscores (not hyphens). This matches Claude Code's internal parser.
 
@@ -257,31 +257,17 @@ If yes, write a dated summary to the appropriate WARM path using filename `YYYY-
 
 Only `content-quality-auditor` and `domain-authority-auditor` may append one veto marker to `memory/hot-cache.md` without asking when a veto-level issue is found. Other skills must ask before writing memory and should hand off veto-like risks to the auditor gate instead.
 
-## Optional Wiki Hints
-
-When a skill's output is relevant to wiki compiled pages, the handoff summary MAY include these additional fields. They are optional — skills that omit them still work correctly, as `memory-management` detects changes by scanning the `memory/` directory.
-
-```markdown
-### Handoff Summary
-
-- **Status**: DONE
-- **Wiki Entities**: [Acme Corp, Beta Inc]
-- **Wiki Keywords**: [best crm software, crm comparison 2026]
-```
-
-These hints help `memory-management` generate more precise compiled pages by providing explicit entity and keyword associations. They do not replace any existing handoff summary fields.
-
 ## Response Presentation Norms
 
-When answering cross-skill queries or presenting wiki-derived information, follow these norms in addition to the Output Voice rules above:
+When answering cross-skill queries or presenting information drawn from project memory, follow these norms in addition to the Output Voice rules above:
 
 1. **Conclusion first** — lead with the finding or recommendation, not the file path or methodology
 2. **Natural language** — say "your homepage has 2 issues to fix" not "CORE-EEAT T04 and C01 veto items failed"
 3. **Collapsible technical detail** — place file paths, raw scores, and veto IDs in a details block so light users can skip them
 4. **End with next step** — every cross-skill answer should conclude with a suggested action
-5. **No internal jargon in user-facing output** — do not surface terms like "wiki", "index.md", "WARM tier", "ingest", or "frontmatter" to end users; use "your project records" or "previous analysis" instead
+5. **No internal jargon in user-facing output** — do not surface terms like "WARM tier" or "frontmatter" to end users; use "your project records" or "previous analysis" instead
 
-These norms apply to all skills when their output incorporates data from multiple memory files or wiki pages.
+These norms apply to all skills when their output incorporates data from multiple memory files.
 
 ## Write Paths by Category
 
@@ -292,7 +278,6 @@ These norms apply to all skills when their output incorporates data from multipl
 | Optimize (4 skills) | `memory/audits/<skill>/` | per-skill audit summaries, veto items, fix priorities |
 | Monitor (4 skills) | `memory/monitoring/` | rank deltas, alert history, backlink changes |
 | Cross-cutting (4 skills) | per-role paths | see protocol-layer definitions |
-| **Protocol gate aggregate (v7.1.0+)** | `memory/audits/YYYY-MM.md` | **owned by `memory-management`**; monthly archive of `content-quality-auditor` and `domain-authority-auditor` handoffs in the structured format defined in [memory-management SKILL.md §Writes](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/cross-cutting/memory-management/SKILL.md); consumed by `/aaron:guard --evals` and the Runbook §5 cross-version rule |
-| **Wiki layer (v9.9.9+)** | `memory/wiki/`, including `index.md`, `<project>/index.md`, `<project>/<type>-<slug>.md`, `log.md`, `log-archive/YYYY.md`, `.unresolved.md`, `.drift-log`, `.retire-day-log` | **owned by `memory-management` as sole semantic writer**; PostToolUse hook may delegate-refresh `index.md` only. Compiled pages capture source WARM frontmatter into `covered_warm[]` for Phase 3 C1 retirement check. Contradictions resolved via SessionStart conversational prompt, never user-edited file markers. **No `retired_path` field anywhere** — Phase 3 retirement reverse-link uses `originally_at` in COLD frontmatter (NOT in wiki/) so `rm -rf memory/wiki/` preserves recovery. See [wiki-runbook.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/cross-cutting/memory-management/references/wiki-runbook.md). |
+| **Protocol gate aggregate (v7.1.0+)** | `memory/audits/YYYY-MM.md` | **owned by `memory-management`**; monthly archive of `content-quality-auditor` and `domain-authority-auditor` handoffs in the structured format defined in [memory-management SKILL.md §Writes](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/cross-cutting/memory-management/SKILL.md); consumed by the Runbook §5 cross-version rule |
 
 **Note on `memory/audits/`**: two conventions coexist. The `<skill>/` subdirectory pattern (Optimize category, per-skill files) is for skill-specific audit artifacts (e.g., `memory/audits/technical-seo-checker/2026-04-11-example.md`). The flat `YYYY-MM.md` pattern (Protocol gate aggregate, monthly) is for the CORE-EEAT / CITE protocol-layer handoff archive. They are siblings, not a conflict.

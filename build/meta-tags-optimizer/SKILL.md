@@ -3,7 +3,7 @@ name: meta-tags-optimizer
 description: 'Use when the user asks to "optimize meta tags"; improves titles, descriptions, Open Graph, Twitter cards, and CTR test variants. 标题优化/元描述/CTR'
 version: "9.9.9"
 license: Apache-2.0
-compatibility: "Claude Code, skills.sh, ClawHub, Vercel Labs, Cursor, Windsurf, Codex CLI, Amp, Gemini CLI, Kimi Code, Qwen Code, CodeBuddy"
+compatibility: "Claude Code and compatible agent-skill hosts"
 homepage: "https://github.com/aaron-he-zhu/seo-geo-claude-skills"
 when_to_use: "Use when optimizing title tags, meta descriptions, Open Graph tags, or Twitter Cards for a page."
 argument-hint: "<page URL or content>"

@@ -82,7 +82,6 @@ Once provided, I'll generate:
 - **Bulk Promotion/Demotion**: `Promote all keywords ranking in top 10 to hot cache`
 - **Memory Snapshot**: `Create memory snapshot for [date/milestone]`
 - **Cross-Project Memory**: `Compare memory with [other project]`
-- **Wiki Lint**: `/aaron:guard --wiki [--fix] [--project name] [--retire-preview]` — see [commands/guard.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/commands/guard.md)
 
 ---
 
@@ -91,7 +90,6 @@ Once provided, I'll generate:
 - **Concurrent access**: Use timestamped filenames to avoid overwrites from parallel sessions.
 - **Cold storage retrieval**: WARM/COLD files only load on demand. Hot cache is primary cross-session mechanism.
 - **Data freshness**: Stale data (>90 days) should be flagged for refresh.
-- **Wiki compilation**: Index is best-effort for summaries; precise fields (score, status, mtime) are deterministic. Delete `memory/wiki/` anytime to revert.
 
 ---
 

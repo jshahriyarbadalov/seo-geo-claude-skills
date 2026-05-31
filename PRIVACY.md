@@ -28,7 +28,7 @@ By default, this library:
 **3. Memory files contain third-party data**:
 - `memory/audits/` may contain competitor URLs, target keywords, audit findings
 - `memory/entities/` may contain third-party brand/person names
-- Session hooks may read `memory/hot-cache.md` and `memory/wiki/*/index.md` into model context; users should be aware when committing repo to public Git, sharing with AI agents, using cloud-hosted model sessions, or syncing across devices
+- Session hooks may read `memory/hot-cache.md` into model context; users should be aware when committing repo to public Git, sharing with AI agents, using cloud-hosted model sessions, or syncing across devices
 - See [memory-management SKILL.md §GDPR / Privacy Compliance](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/cross-cutting/memory-management/SKILL.md) for retention + deletion guidance
 
 ### In scope for security review
@@ -42,7 +42,7 @@ See [SECURITY.md](SECURITY.md) for responsible disclosure.
 
 This project references but does not bundle or depend on:
 
-- **ClawHub** / **skills.sh**: Skill distribution platforms (their privacy policies apply during installation)
+- **skills.sh**: Skill distribution platform (its privacy policy applies during installation)
 - **GitHub**: Source code hosting (GitHub's privacy policy applies)
 
 ## Contact

@@ -3,30 +3,27 @@
 > **Runbook version**: 1.2
 > **Release**: v10.0.x
 > **Last updated**: 2026-05-06
-> **Changes since 1.1**: severity tier routing (P0/P1/P2) added to §5 Translation Layer; §6 Lint Coverage Manifest extended to enforce non-leakage of P0/P1/P2 internal labels; full alignment with [contract-fail-caps.md Severity Tiers](contract-fail-caps.md). Version bump per §6 Update Protocol.
-> **Changes since 1.0**: Example 1 arithmetic corrected to integer; added cross-version rerun rule (§5); added BLOCKED-path escape hatch (§5); clarified open_loops scope (§5); dual-hash sync markers (§6).
-> **Next scheduled review**: when 30+ real multi-veto audits exist, using `/aaron:guard --evals` plus maintainer calibration review
+> **Changes since 1.1**: severity tier routing (P0/P1/P2) added to §5 Translation Layer.
+> **Changes since 1.0**: Example 1 arithmetic corrected to integer; added cross-version rerun rule (§5); added BLOCKED-path escape hatch (§5); clarified open_loops scope (§5).
+> **Next scheduled review**: when 30+ real multi-veto audits exist, plus maintainer calibration review
 
 This file is the single source of truth for auditor-class skill output behavior. It is inlined into:
 - [cross-cutting/content-quality-auditor/SKILL.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/cross-cutting/content-quality-auditor/SKILL.md)
 - [cross-cutting/domain-authority-auditor/SKILL.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/cross-cutting/domain-authority-auditor/SKILL.md)
 
-Drift detection: `/aaron:guard --contracts` validates inlined copies against this file via **two** sha256 hashes carried in sync markers: `source_sha256` over the whole Runbook file, and `block_sha256` over the inlined §1-5 content. Either hash mismatch is a drift event. Manual edits to inlined copies are forbidden — edit this source file and re-run the sync procedure (see [AUDITOR-AUTHORS.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/references/AUDITOR-AUTHORS.md)).
+The inlined copies must stay faithful to this source file. Edit this source file when the auditor behavior changes, then update the inlined copies in both auditor SKILL.md files to match.
 
 ## Ownership Routing (read this before asking "which file owns what")
 
 - **Auditor item definitions** (veto IDs, dimension structure) → [core-eeat-benchmark.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/references/core-eeat-benchmark.md) for CORE-EEAT, [cite-domain-rating.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/references/cite-domain-rating.md) for CITE
-- **Cap policy and active numbers** → [contract-fail-caps.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/references/contract-fail-caps.md); this runbook may restate them only inside the hash-synced executable block
-- **Application arithmetic, handoff schema, translation rules** → this file (§1 through §6)
+- **Cap policy, active numbers, application arithmetic, handoff schema, translation rules** → this file (§1 through §5)
 - **General handoff format for all skills** → [skill-contract.md](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/references/skill-contract.md)
-
-Any restatement of a rule outside its owning file is a drift bug and will be flagged by `/aaron:guard --contracts`.
 
 ---
 
 ## §1 · Handoff Schema (authoritative)
 
-Every auditor-class handoff MUST follow this shape. Emitted audit artifact files (e.g., `memory/audits/**/*.md`) MUST include `class: auditor-output` in their YAML frontmatter so the PostToolUse Artifact Gate and guarded auditor archive checks can detect them by frontmatter class instead of prose pattern-matching. Files lacking this marker are not treated as audit artifacts regardless of body content.
+Every auditor-class handoff MUST follow this shape. Emitted audit artifact files (e.g., `memory/audits/**/*.md`) MUST include `class: auditor-output` in their YAML frontmatter so the PostToolUse Artifact Gate can detect them by frontmatter class instead of prose pattern-matching. Files lacking this marker are not treated as audit artifacts regardless of body content.
 
 ```yaml
 ---
@@ -169,7 +166,7 @@ Handoff:
       evidence: "..."
 ```
 
-**Why BLOCKED, not "capped at 40"**: the 40-tier cap number is unvalidated. Blocking forces manual review, which is more honest than publishing an eyeballed number. Calibration trigger: 30+ real multi-veto audits in `memory/audits/`, reviewed through `/aaron:guard --evals` plus maintainer calibration.
+**Why BLOCKED, not "capped at 40"**: the 40-tier cap number is unvalidated. Blocking forces manual review, which is more honest than publishing an eyeballed number. Calibration trigger: 30+ real multi-veto audits in `memory/audits/`, reviewed through maintainer calibration.
 
 **Note on dimension vs count**: the 2+ veto threshold counts **total veto failures across all dimensions**, not per-dimension. Example 3 shows T04 (Trust dim) + R10 (Referenceability dim) on different dimensions, but T03 + T09 both on the Trust dimension would also trigger BLOCKED. The veto count is dimension-agnostic.
 
@@ -312,46 +309,6 @@ However, if a user request ever surfaces `open_loops` to the user directly — f
 
 ### Severity tier routing (internal)
 
-Each `key_findings.severity` maps to a P-tier per [contract-fail-caps.md §Severity Tiers](contract-fail-caps.md): `veto` → **P0**, `high` → **P1**, `medium`/`low` → **P2**. Downstream skills consume P-tier ordering; the P-tier label never reaches users (translate via the table above).
+Each `key_findings.severity` maps to a P-tier: `veto` → **P0**, `high` → **P1**, `medium`/`low` → **P2**. Downstream skills consume P-tier ordering; the P-tier label never reaches users (translate via the table above).
 
 When rendering a multi-finding report, group by tier (critical first, should-fix, nice-to-have); within each tier sort by `weight × points lost`. **Augments, does not replace, the Top 5 Priority Improvements ranking** — Top 5 remains the cross-tier highlight reel; severity grouping is the primary structural breakdown that precedes it.
-
----
-
-## §6 · Lint Coverage Manifest
-
-This section enumerates what `/aaron:guard --contracts` (v7.2.0) checks against. When this manifest changes, `commands/guard.md` must be updated in the same commit. `/aaron:guard --contracts` opens with a reference to this §6 and refuses to run if its internal check list is older than the Runbook version.
-
-### Current coverage (v10.0.x — Runbook 1.2)
-
-- **Handoff schema fields**: `status`, `objective`, `key_findings[]` with `{title, severity, evidence}`, `evidence_summary`, `open_loops`, `recommended_next_skill`, `cap_applied`, `raw_overall_score`, `final_overall_score`
-- **Veto items checked**: CORE-EEAT T04/C01/R10, CITE T03/T05/T09
-- **Cap arithmetic rule**: `final_dim = min(raw_dim, 60)` when veto failed; `final_overall = min(raw_overall, 60)` when any veto failed; `status = BLOCKED` when ≥2 vetos failed
-- **Guardrail reframes**: years windowed to `[current_year − 2, current_year]`; numbered lists / qualifiers / short acronyms unconditionally positive; homepage vs inner-page title patterns
-- **Forbidden user-output substrings**: veto IDs (T03, T04, T05, T09, C01, R10), "capped at", "raw_overall_score", "gap_type", "cap_applied", "final_overall_score". **Severity labels** `P0`, `P1`, `P2` (case-insensitive standalone tokens), and the literal strings `severity: veto`, `severity: high`, `severity: medium`, `severity: low`. Allowed-in-user-output: the word "capped" followed by "due to" (as in "capped due to 1 critical issue"); the words "critical issue", "should-fix", "nice-to-have"
-- **Severity tier mapping**: every `key_findings[].severity` value MUST resolve to a P-tier per [contract-fail-caps.md §Severity Tiers](contract-fail-caps.md). User-facing output groups findings as critical issue → should-fix → nice-to-have, in that order
-- **Cross-version rule**: if `memory/audits/` contains a prior audit of the same target with a materially different score (delta > 10) under an earlier Runbook version, the user output must carry an inline explainer distinguishing "content changed" from "rule changed"
-- **Open_loops scope**: internal field for downstream skill consumption; veto IDs and severity tier labels permitted in handoff YAML; MUST be translated to plain language if ever surfaced to the user
-- **Sync markers**: `<!-- runbook-sync start: source_sha256=<hash1> block_sha256=<hash2> -->` and `<!-- runbook-sync end -->` in both auditor SKILL.md files. `source_sha256` matches the full runbook file (detects Attack A — source edited). `block_sha256` matches the bytes between start/end markers (detects Attack B — inlined copy edited). Both must match for a clean lint.
-- **Known allowlist exceptions**: the inlined runbook-sync blocks in `cross-cutting/content-quality-auditor/SKILL.md` and `cross-cutting/domain-authority-auditor/SKILL.md` are the ONLY permitted restatements of cap numbers and runbook content. All other files must link-not-restate.
-
-### Update protocol
-
-**When editing §1-5 (execution-critical content)**:
-
-1. Append (or remove) the corresponding entry in §6 if a lintable rule changed
-2. Update `commands/guard.md` check list to match
-3. Bump Runbook version at the top of this file
-4. Recompute both hashes (`source_sha256` over the full runbook file, `block_sha256` over §1-5 content as inlined) and update sync markers in both auditor SKILL.md files
-5. Re-inline §1-5 content into both auditor SKILL.md files
-6. Commit everything in one commit
-
-**When editing ONLY §6 (Lint Coverage Manifest) or only the header/ownership routing**:
-
-1. Bump Runbook version at the top of this file
-2. Recompute `source_sha256` only (the full file hash changed). `block_sha256` stays the same (§1-5 content is unchanged)
-3. Update `source_sha256` in both auditor SKILL.md sync markers — but do NOT re-inline the block content (it hasn't changed)
-4. Update `commands/guard.md` check list if §6 items changed
-5. Commit everything in one commit
-
-This avoids unnecessary re-inline churn on §6-only edits while still ensuring `source_sha256` tracks the full Runbook state. `/aaron:guard --contracts` will report a `source_sha256` mismatch if step 2-3 are skipped, which is the intended fail-closed behavior.

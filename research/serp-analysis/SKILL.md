@@ -3,7 +3,7 @@ name: serp-analysis
 description: 'Use when the user asks to "analyze SERPs"; reviews ranking factors, features, intent, AI Overviews, and snippets. SERP分析/搜索结果'
 version: "9.9.9"
 license: Apache-2.0
-compatibility: "Claude Code, skills.sh, ClawHub, Vercel Labs, Cursor, Windsurf, Codex CLI, Amp, Gemini CLI, Kimi Code, Qwen Code, CodeBuddy"
+compatibility: "Claude Code and compatible agent-skill hosts"
 allowed-tools: WebFetch
 homepage: "https://github.com/aaron-he-zhu/seo-geo-claude-skills"
 when_to_use: "Use when analyzing search engine results pages, SERP features, featured snippets, People Also Ask, or understanding ranking patterns for a query."

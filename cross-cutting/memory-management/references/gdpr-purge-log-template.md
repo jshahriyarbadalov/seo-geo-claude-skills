@@ -29,20 +29,13 @@ Append-only YAML list. One entry per purge invocation. Newest entries at the bot
         - memory/research/competitors/acme-2024.md
         - memory/audits/domain/acme-cite.md
         - memory/entities/acme-corp.md
-    - wiki:
-        - memory/wiki/acme-q2/entity-acme-corp.md
-        - memory/wiki/log.md             # entry redacted, structure preserved
-        - memory/wiki/.unresolved.md      # value-field scrub per v9.9.9
-        - memory/wiki/.drift-log
     - archive:
-        - memory/archive/2026-05-01-acme-2024.md  # if retired pre-purge, originally_at + body scrubbed
+        - memory/archive/2026-05-01-acme-2024.md  # if archived pre-purge, body scrubbed
   action: anonymize                            # delete | anonymize | structural-preserve
   action_detail: |
     Replaced "Jane Doe" string with "[REDACTED]" in 14 lines across 9 files.
-    Preserved contradiction structure in .unresolved.md (entry id 042).
-    Updated wiki index after rewrite.
   legal_basis: art_17_request                  # art_17_request | ccpa_1798.105 | proactive_data_minimization
-  malformed_archives_processed: 0              # count of archives lacking originally_at that were body-grepped (v9.9.9+ fix)
+  malformed_archives_processed: 0              # count of archives lacking clean frontmatter that were body-grepped
   override_used: false                         # true if user invoked any override (e.g., partial-skip for audit integrity)
   reingest_blocked: true                       # mirrors memory/privacy/tombstones.md entry — must always be true post-purge
   proof:
@@ -63,12 +56,11 @@ Append-only YAML list. One entry per purge invocation. Newest entries at the bot
 | `redacted_label` | ✅ | string | Stable label for cross-referencing the tombstone (`memory/privacy/tombstones.md`). NEVER raw name. |
 | `fingerprint` | ✅ | `sha256:<hex>` | Salted with project-level secret. Non-reversible. Allows re-detection of reingest attempts. |
 | `scope.canonical[]` | ✅ | path[] | Files in HOT/WARM/COLD tiers touched. Empty list if none. |
-| `scope.wiki[]` | ✅ | path[] | Wiki layer files touched. Empty list if none. |
-| `scope.archive[]` | ✅ | path[] | `memory/archive/*.md` files touched (Phase 3 retirement reverse-link). |
-| `action` | ✅ | enum | `delete` (file removed entirely) / `anonymize` (subject replaced with `[REDACTED]`) / `structural-preserve` (e.g., `.unresolved.md` entry kept for audit, value scrubbed). |
+| `scope.archive[]` | ✅ | path[] | `memory/archive/*.md` files touched. |
+| `action` | ✅ | enum | `delete` (file removed entirely) / `anonymize` (subject replaced with `[REDACTED]`) / `structural-preserve` (an entry kept for audit integrity, value scrubbed). |
 | `action_detail` | ✅ | string | Human-readable summary of what was done. NEVER include the raw subject name here. |
 | `legal_basis` | ✅ | enum | Drives auditor verification. |
-| `malformed_archives_processed` | ✅ | int | v9.9.9+ tracks archives without `originally_at` that were body-grepped. |
+| `malformed_archives_processed` | ✅ | int | Tracks archives without clean frontmatter that were body-grepped. |
 | `override_used` | ✅ | bool | `true` if user picked a partial-skip option (e.g., refused to delete an audit-integrity entry). |
 | `reingest_blocked` | ✅ | bool | MUST be `true` after purge. Cross-references the tombstone fingerprint. |
 | `proof` | ✅ | object | grep counts before/after, file modification count, log entries appended. The mechanical proof an auditor can verify. |
@@ -86,7 +78,7 @@ If the purge spans multiple days (e.g., user paused mid-action), each day's port
 A compliance auditor with read access to `memory/audits/gdpr-purges.md` can verify:
 
 1. **Coverage**: scope arrays match the documented surface in SKILL.md GDPR step 3.
-2. **Mechanical proof**: `grep_count_before` > 0 AND `grep_count_after` == 0 in canonical/wiki/archive scopes.
+2. **Mechanical proof**: `grep_count_before` > 0 AND `grep_count_after` == 0 in canonical/archive scopes.
 3. **No raw data persistence**: `redacted_label` and `fingerprint` only — confirm no plaintext name appears anywhere in the entry.
 4. **Reingest block**: `reingest_blocked: true` AND tombstone exists at `memory/privacy/tombstones.md` matching the fingerprint.
 5. **Override accountability**: `override_used: true` entries get extra scrutiny; the `action_detail` should explain what was preserved and why (typically audit integrity).
@@ -94,7 +86,6 @@ A compliance auditor with read access to `memory/audits/gdpr-purges.md` can veri
 ## Cross-references
 
 - [memory-management SKILL.md GDPR section](../SKILL.md) — purge procedure
-- [wiki-runbook.md §3](wiki-runbook.md) — log.md write rules (separate audit trail for wiki ops)
 - [references/skill-contract.md](../../../references/skill-contract.md) — Write Paths table
 
 ## History

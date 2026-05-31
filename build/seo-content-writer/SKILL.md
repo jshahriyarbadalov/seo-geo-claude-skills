@@ -3,7 +3,7 @@ name: seo-content-writer
 description: 'Use when the user asks to "write SEO content"; drafts posts, articles, and landing pages with keywords, headers, snippets, and evidence boundaries. SEO文章写作/内容优化'
 version: "9.9.9"
 license: Apache-2.0
-compatibility: "Claude Code, skills.sh, ClawHub, Vercel Labs, Cursor, Windsurf, Codex CLI, Amp, Gemini CLI, Kimi Code, Qwen Code, CodeBuddy"
+compatibility: "Claude Code and compatible agent-skill hosts"
 homepage: "https://github.com/aaron-he-zhu/seo-geo-claude-skills"
 when_to_use: "Use when writing SEO-optimized articles, blog posts, landing pages, or product descriptions. Also when the user asks to create content targeting a specific keyword."
 argument-hint: "<topic> <target keyword>"

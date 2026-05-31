@@ -34,7 +34,7 @@ name: your-skill-name
 version: "1.0.0"
 description: 'Use when the user asks to "[trigger]". [What it does]. For [related task], see [other-skill].'
 license: Apache-2.0
-compatibility: "Claude Code ≥1.0, skills.sh marketplace, ClawHub marketplace, Vercel Labs skills ecosystem."
+compatibility: "Claude Code and compatible agent-skill hosts"
 metadata:
   author: your-github-username
   version: "1.0.0"
@@ -48,15 +48,14 @@ The `name` field must match the directory name exactly.
 
 ### 4. Write effective instructions
 
-Use the compact shared skeleton from `references/skill-contract.md`: `Quick Start`, `Skill Contract`, `Handoff Summary`, `Data Sources`, `Instructions`, `Reference Materials`, and `Next Best Skill`. Optional sections such as `What This Skill Does`, `Example`, `Tips for Success`, `Save Results`, and `Validation Checkpoints` are welcome when they improve execution quality. Keep regular skills under 350 lines; put detailed references in `references/` subdirectory.
+Use the compact shared skeleton from `references/skill-contract.md`: `Quick Start`, `Skill Contract`, `Handoff Summary`, `Data Sources`, `Instructions`, `Reference Materials`, and `Next Best Skill`. Optional sections such as `What This Skill Does`, `Example`, `Tips for Success`, `Save Results`, and `Validation Checkpoints` are welcome when they improve execution quality. Put detailed references in the skill's `references/` subdirectory.
 
-Auditor-class skills are the exception: they may inline the authoritative auditor runbook with `runbook-sync` markers and a ~750-line ceiling.
+Auditor-class skills are the exception: they inline the authoritative auditor runbook directly in their `SKILL.md` body.
 
 ### 5. Validate
 
 ```bash
 ./scripts/validate-skill.sh <category>/<skill-name>
-./scripts/validate-slimming-guardrails.sh
 ```
 
 ### 6. Update tracking files
@@ -68,7 +67,7 @@ After adding or updating a skill, keep these 5 files in sync:
 - `README.md` — skills table
 - `CLAUDE.md` — category table
 
-For release bumps, also sync `CITATION.cff`, README badges, localized README badges, Gemini/Qwen/CodeBuddy manifests, both marketplace files, and the [marketplace module](marketplaces/README.md) when platform-facing behavior changes. `/aaron:guard --versions --apply` helps, but `./scripts/validate-slimming-guardrails.sh` is the release gate that confirms the full surface.
+For release bumps, also sync README badges, localized README badges, and both marketplace files.
 
 ## Improving Existing Skills
 
@@ -78,24 +77,20 @@ Keep changes focused. Bump both top-level `version` and `metadata.version` toget
 
 Before submitting a PR:
 
-- [ ] `name` matches directory name (satisfies ClawHub slug `^[a-z0-9][a-z0-9-]*$`)
+- [ ] `name` matches directory name (lowercase slug `^[a-z0-9][a-z0-9-]*$`)
 - [ ] Top-level `version` is present and matches `metadata.version` plus `VERSIONS.md`
 - [ ] `description` includes trigger phrases AND scope boundaries (≤1024 chars)
-- [ ] SKILL.md body under 350 lines; detail in `references/`
 - [ ] Shared compact section contract present (`validate-skill.sh` checks this)
 - [ ] Validator passes: `./scripts/validate-skill.sh <category>/<skill-name>`
-- [ ] Slimming/release guardrails pass: `./scripts/validate-slimming-guardrails.sh`
 - [ ] Uses `~~placeholder` pattern for tool references
 - [ ] `allowed-tools: WebFetch` added if skill fetches live URLs
 - [ ] Includes validation checkpoints and at least one example
 - [ ] All tracking and release files updated; plugin.json and marketplace.json arrays identical
 - [ ] `.claude-plugin/marketplace.json` byte-identical to repo-root copy
-- [ ] Marketplace-facing changes are reflected in `marketplaces/README.md`
 
 ## Submitting
 
-1. Fork, create `feature/your-skill-name` branch, submit PR
-2. After merge, publish to ClawHub: `clawhub publish` or `clawhub sync`
+- Fork, create a `feature/your-skill-name` branch, and submit a PR.
 
 ## Code of Conduct
 

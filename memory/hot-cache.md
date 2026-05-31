@@ -1,14 +1,14 @@
 ---
 tier: hot
 project: null
-# Set `project: acme-q2` (or any slug) to scope this session's wiki/memory reads
+# Set `project: acme-q2` (or any slug) to scope this session's memory reads
 # to a specific project. Leave null for global/default scope.
-# See state-model.md §Project Isolation for the full lifecycle.
+# See state-model.md §Memory File Frontmatter for the project-scope lifecycle.
 ---
 
 # Hot Cache
 
-> Auto-loaded at session start. Hard limit: 80 lines / 25KB. See [memory-management](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/cross-cutting/memory-management/SKILL.md). Project isolation: set `project:` in the frontmatter above to scope wiki reads (e.g. `memory/wiki/acme-q2/index.md`).
+> Auto-loaded at session start. Hard limit: 80 lines / 25KB. See [memory-management](https://github.com/aaron-he-zhu/seo-geo-claude-skills/blob/main/cross-cutting/memory-management/SKILL.md). Project isolation: set `project:` in the frontmatter above to scope this session's memory reads to a specific project.
 
 ## Active Index
 

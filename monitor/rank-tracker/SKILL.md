@@ -3,7 +3,7 @@ name: rank-tracker
 description: 'Use when the user asks to "track rankings"; monitors keyword/SERP changes from provided exports or connected tools, including AI response checks. 排名追踪/SERP监控'
 version: "9.9.9"
 license: Apache-2.0
-compatibility: "Claude Code, skills.sh, ClawHub, Vercel Labs, Cursor, Windsurf, Codex CLI, Amp, Gemini CLI, Kimi Code, Qwen Code, CodeBuddy"
+compatibility: "Claude Code and compatible agent-skill hosts"
 homepage: "https://github.com/aaron-he-zhu/seo-geo-claude-skills"
 when_to_use: "Use when tracking keyword rankings, monitoring position changes, comparing ranking snapshots, or detecting ranking drops."
 argument-hint: "<domain> [keyword list]"

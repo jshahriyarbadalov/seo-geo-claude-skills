@@ -3,7 +3,7 @@ name: alert-manager
 description: 'Use when the user asks to "set SEO alerts"; configures ranking, traffic, technical, competitor, and notification thresholds. SEO预警/排名监控'
 version: "9.9.9"
 license: Apache-2.0
-compatibility: "Claude Code, skills.sh, ClawHub, Vercel Labs, Cursor, Windsurf, Codex CLI, Amp, Gemini CLI, Kimi Code, Qwen Code, CodeBuddy"
+compatibility: "Claude Code and compatible agent-skill hosts"
 homepage: "https://github.com/aaron-he-zhu/seo-geo-claude-skills"
 when_to_use: "Use when setting up monitoring alerts for rankings, traffic, backlinks, technical issues, or AI visibility changes."
 argument-hint: "<domain> [metric]"
